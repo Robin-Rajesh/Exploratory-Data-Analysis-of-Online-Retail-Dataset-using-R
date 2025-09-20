@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Retail Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 30px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 10px;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        .insight-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .success-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .warning-card {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .header-title {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        .header-title h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header-title p {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="dashboard-container">
+            <div class="header-title">
+                <h1><i class="fas fa-chart-line"></i> Online Retail Analytics Dashboard</h1>
+                <p>Comprehensive analysis of retail performance metrics and insights</p>
+            </div>
+
+            <!-- Key Metrics Row -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="card-body">
+                            <i class="fas fa-users fa-2x mb-3"></i>
+                            <div class="metric-value">4,338</div>
+                            <div class="metric-label">Total Customers</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="card-body">
+                            <i class="fas fa-redo fa-2x mb-3"></i>
+                            <div class="metric-value">65.6%</div>
+                            <div class="metric-label">Repeat Customers</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="card-body">
+                            <i class="fas fa-shopping-cart fa-2x mb-3"></i>
+                            <div class="metric-value">$480</div>
+                            <div class="metric-label">Average Order Value</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card metric-card">
+                        <div class="card-body">
+                            <i class="fas fa-box fa-2x mb-3"></i>
+                            <div class="metric-value">13.1</div>
+                            <div class="metric-label">Avg Quantity per Order</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-chart-line"></i> Monthly Revenue Trend</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="monthlyRevenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Top 10 Products by Quantity</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="topProductsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tables Row -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-globe"></i> Revenue by Country</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-container">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Country</th>
+                                            <th>Total Revenue</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="countryRevenueTable">
+                                        <!-- Data will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="mb-0"><i class="fas fa-star"></i> Top Products by Revenue</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-container">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Total Revenue</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="topProductsRevenueTable">
+                                        <!-- Data will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights Row -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card insight-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-lightbulb fa-3x mb-3"></i>
+                            <h5>Key Insight</h5>
+                            <p>Singapore has the highest average order value at $3,040, indicating premium customer
+                                behavior.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card success-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-trophy fa-3x mb-3"></i>
+                            <h5>Top Performer</h5>
+                            <p>United Kingdom dominates with $7.3M in total revenue, representing the largest market.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card warning-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-pie fa-3x mb-3"></i>
+                            <h5>Customer Loyalty</h5>
+                            <p>65.6% of customers are repeat buyers, showing strong customer retention.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sample data based on the R analysis results
+        const monthlyRevenueData = {
+            labels: ['Dec 2010', 'Jan 2011', 'Feb 2011', 'Mar 2011', 'Apr 2011', 'May 2011', 'Jun 2011', 'Jul 2011', 'Aug 2011', 'Sep 2011', 'Oct 2011', 'Nov 2011', 'Dec 2011'],
+            datasets: [{
+                label: 'Monthly Revenue',
+                data: [280000, 320000, 290000, 350000, 380000, 420000, 450000, 480000, 520000, 550000, 580000, 620000, 650000],
+                borderColor: 'rgb(102, 126, 234)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        };
+
+        const topProductsData = {
+            labels: [
+                'PAPER CRAFT, LITTLE BIRDIE',
+                'MEDIUM CERAMIC TOP STORAGE JAR',
+                'WORLD WAR 2 GLIDERS',
+                'JUMBO BAG RED RETROSPOT',
+                'WHITE HANGING HEART T-LIGHT',
+                'ASSORTED COLOUR BIRD ORNAMENT',
+                'PACK OF 72 RETROSPOT CAKE CASES',
+                'POPCORN HOLDER',
+                'RABBIT NIGHT LIGHT',
+                'MINI PAINT SET VINTAGE'
+            ],
+            datasets: [{
+                label: 'Quantity Sold',
+                data: [80995, 77916, 54319, 46078, 36706, 35263, 33670, 30919, 27153, 26076],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)',
+                    'rgba(199, 199, 199, 0.8)',
+                    'rgba(83, 102, 255, 0.8)',
+                    'rgba(255, 99, 255, 0.8)',
+                    'rgba(99, 255, 132, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(199, 199, 199, 1)',
+                    'rgba(83, 102, 255, 1)',
+                    'rgba(255, 99, 255, 1)',
+                    'rgba(99, 255, 132, 1)'
+                ],
+                borderWidth: 2
+            }]
+        };
+
+        const countryRevenueData = [
+            { country: 'United Kingdom', revenue: 7285025 },
+            { country: 'Netherlands', revenue: 285446 },
+            { country: 'EIRE', revenue: 265262 },
+            { country: 'Germany', revenue: 228678 },
+            { country: 'France', revenue: 208934 },
+            { country: 'Australia', revenue: 138454 },
+            { country: 'Spain', revenue: 61559 },
+            { country: 'Switzerland', revenue: 56444 },
+            { country: 'Belgium', revenue: 41196 },
+            { country: 'Sweden', revenue: 38368 }
+        ];
+
+        const topProductsRevenueData = [
+            { product: 'PAPER CRAFT, LITTLE BIRDIE', revenue: 168470 },
+            { product: 'REGENCY CAKESTAND 3 TIER', revenue: 142265 },
+            { product: 'WHITE HANGING HEART T-LIGHT HOLDER', revenue: 100392 },
+            { product: 'JUMBO BAG RED RETROSPOT', revenue: 85041 },
+            { product: 'MEDIUM CERAMIC TOP STORAGE JAR', revenue: 81417 },
+            { product: 'POSTAGE', revenue: 77804 },
+            { product: 'PARTY BUNTING', revenue: 68785 },
+            { product: 'ASSORTED COLOUR BIRD ORNAMENT', revenue: 56413 },
+            { product: 'Manual', revenue: 53420 },
+            { product: 'RABBIT NIGHT LIGHT', revenue: 51251 }
+        ];
+
+        // Initialize charts
+        function initializeCharts() {
+            // Monthly Revenue Chart
+            const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+            new Chart(monthlyRevenueCtx, {
+                type: 'line',
+                data: monthlyRevenueData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Top Products Chart
+            const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
+            new Chart(topProductsCtx, {
+                type: 'bar',
+                data: topProductsData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Populate tables
+        function populateTables() {
+            // Country Revenue Table
+            const countryTableBody = document.getElementById('countryRevenueTable');
+            countryRevenueData.forEach(item => {
+                const row = countryTableBody.insertRow();
+                row.insertCell(0).textContent = item.country;
+                row.insertCell(1).textContent = '$' + item.revenue.toLocaleString();
+            });
+
+            // Top Products Revenue Table
+            const productsTableBody = document.getElementById('topProductsRevenueTable');
+            topProductsRevenueData.forEach(item => {
+                const row = productsTableBody.insertRow();
+                row.insertCell(0).textContent = item.product;
+                row.insertCell(1).textContent = '$' + item.revenue.toLocaleString();
+            });
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeCharts();
+            populateTables();
+        });
+    </script>
+</body>
+
+</html>
